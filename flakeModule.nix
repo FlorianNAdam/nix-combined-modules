@@ -6,6 +6,7 @@
   ...
 }:
 let
+
   inherit (lib)
     mkOption
     types
@@ -13,6 +14,14 @@ let
   inherit (flake-parts-lib)
     mkSubmoduleOptions
     ;
+
+  knownOptions = [
+    "exampleOption1"
+    "exampleOption2"
+  ]; # List your known options here
+  allOptions = lib.attrNames config.myModule; # Retrieve all options provided in the `myModule` namespace
+  unknownOptions = lib.filter (opt: !(lib.elem opt knownOptions)) allOptions;
+
 in
 {
   options = {
@@ -37,4 +46,14 @@ in
   #     nixosConfigurations = config.nix-config.nixosConfigurations;
   #   };
   # };
+
+  config = lib.mkIf (!lib.isEmpty unknownOptions) (
+    throw (
+      lib.concatStringsSep ", " [
+        "Unknown options: "
+        (lib.concatStringsSep ", " unknownOptions)
+      ]
+    )
+  );
+
 }

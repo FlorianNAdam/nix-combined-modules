@@ -9,5 +9,6 @@ in
 
   config = lib.mkIf cfg.enable {
     #config contents
+    test = builtins.trace "hi";
   };
 }
