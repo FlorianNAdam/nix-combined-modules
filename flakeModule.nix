@@ -31,10 +31,10 @@ in
     };
   };
 
-  config = {
-    flake = {
-      homeConfigurations = config.nix-config.homeConfigurations;
-      nixosConfigurations = config.nix-config.nixosConfigurations;
-    };
-  };
+  # config = {
+  #   flake = {
+  #     homeConfigurations = config.nix-config.homeConfigurations;
+  #     nixosConfigurations = config.nix-config.nixosConfigurations;
+  #   };
+  # };
 }
