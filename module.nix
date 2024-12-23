@@ -1,28 +1,35 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }:
-with lib;
+
 let
   cfg = config.nix-config;
 in
 {
-  imports = [ ];
-
-  options = {
-    nixos2 = mkOption {
-      type = types.anything;
-      default = { }; # Ensure a valid default
-    };
-
-    home = mkOption {
-      type = types.anything;
-      default = { };
+  options.nix-config = {
+    description = "Custom configuration containing NixOS and Home options";
+    type = lib.types.attrsOf (
+      lib.types.submodule {
+        options = {
+          nixos = lib.mkOption {
+            type = lib.types.attrs;
+            description = "NixOS-specific configuration options";
+          };
+          home = lib.mkOption {
+            type = lib.types.attrs;
+            description = "Home Manager-specific configuration options";
+          };
+        };
+      }
+    );
+    default = {
+      nixos = { };
+      home = { };
     };
   };
 
-  config = mkMerge [
-    config.nixos2
-  ];
+  config = { };
 }
