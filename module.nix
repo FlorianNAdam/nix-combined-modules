@@ -33,5 +33,7 @@ in
     };
   };
 
-  config = { };
+  config = lib.mkMerge [
+    cfg.nixos
+  ];
 }
