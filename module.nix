@@ -4,10 +4,6 @@
   pkgs,
   ...
 }:
-
-let
-  cfg = config.nix-config;
-in
 {
   options = {
     nix-config = lib.mkOption {
@@ -33,7 +29,5 @@ in
     };
   };
 
-  config = lib.mkMerge [
-    cfg.nixos
-  ];
+  config = { };
 }
