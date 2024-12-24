@@ -33,16 +33,14 @@ with lib;
   };
 
   config = {
-    # Dynamically add configuration by merging nix-config.nixos
-    _module = {
-      args = {
+    # Use dynamic imports to include the nixos configuration
+    imports =
+      let
         nixosConfig = config.nix-config.nixos;
-      };
-
-      # Merge the `nixosConfig` directly into the configuration tree
-      config = mkMerge [
-        (config._module.args.nixosConfig or { })
+      in
+      [
+        # Dynamically pass the nixos configuration as an inline module
+        ({ ... }: nixosConfig)
       ];
-    };
   };
 }
