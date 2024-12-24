@@ -32,12 +32,8 @@ with lib;
     };
   };
 
-  config = {
-    # Merge the `nix-config.nixos` into the top-level configuration
-    _module = {
-      config = mkMerge [
-        config.nix-config.nixos
-      ];
-    };
-  };
+  config = mkMerge [
+    # Add `nix-config.nixos` directly into the configuration tree
+    (config.nix-config.nixos or { })
+  ];
 }
