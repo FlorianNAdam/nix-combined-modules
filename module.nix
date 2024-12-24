@@ -30,10 +30,6 @@
   };
 
   config = {
-    _module = {
-      config = lib.mkMerge [
-        config.nix-config.nixos
-      ];
-    };
+    nixosConfig = config.nix-config.nixos;
   };
 }
