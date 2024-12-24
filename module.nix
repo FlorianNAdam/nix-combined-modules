@@ -29,7 +29,7 @@
     };
   };
 
-  config = {
-    nixosConfig = config.nix-config.nixos;
-  };
+  config = lib.mkMerge [
+    config.nix-config.nixos
+  ];
 }
