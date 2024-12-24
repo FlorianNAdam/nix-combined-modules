@@ -4,19 +4,22 @@
   pkgs,
   ...
 }:
+
+with lib;
+
 {
   options = {
-    nix-config = lib.mkOption {
+    nix-config = mkOption {
       description = "Custom configuration containing NixOS and Home options";
-      type = lib.types.attrsOf (
-        lib.types.submodule {
+      type = types.attrsOf (
+        types.submodule {
           options = {
-            nixos = lib.mkOption {
-              type = lib.types.attrs;
+            nixos = mkOption {
+              type = types.attrs;
               description = "NixOS-specific configuration options";
             };
-            home = lib.mkOption {
-              type = lib.types.attrs;
+            home = mkOption {
+              type = types.attrs;
               description = "Home Manager-specific configuration options";
             };
           };
@@ -29,9 +32,15 @@
     };
   };
 
-  _module = {
-    config = lib.mkMerge [
-      config.nix-config.nixos
+  config = {
+    # Pass nix-config.nixos to the top-level as part of module arguments
+    _module = {
+      args.nixosConfig = config.nix-config.nixos;
+    };
+
+    # Use the passed argument (avoiding recursion)
+    imports = [
+      ({ nixosConfig, ... }: nixosConfig)
     ];
   };
 }
