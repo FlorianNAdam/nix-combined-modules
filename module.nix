@@ -19,7 +19,7 @@ with lib;
               description = "NixOS-specific configuration options";
             };
             home = mkOption {
-              type = types.attrs;
+              type = types.deferredModule;
               description = "Home Manager-specific configuration options";
             };
           };
