@@ -29,5 +29,12 @@
     };
   };
 
-  config = { };
+  config = lib.mkMerge [
+    lib.evalModules
+    {
+      modules = [
+        config.nix-config.nixos
+      ];
+    }
+  ];
 }
