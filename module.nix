@@ -15,7 +15,7 @@ with lib;
         types.submodule {
           options = {
             nixos = mkOption {
-              type = types.attrs;
+              type = types.deferredModule;
               description = "NixOS-specific configuration options";
             };
             home = mkOption {
