@@ -33,14 +33,16 @@ with lib;
   };
 
   config = {
-    # Pass nix-config.nixos to the top-level as part of module arguments
+    # Dynamically add configuration by merging nix-config.nixos
     _module = {
-      args.nixosConfig = config.nix-config.nixos;
-    };
+      args = {
+        nixosConfig = config.nix-config.nixos;
+      };
 
-    # Use the passed argument (avoiding recursion)
-    imports = [
-      ({ nixosConfig, ... }: nixosConfig)
-    ];
+      # Merge the `nixosConfig` directly into the configuration tree
+      config = mkMerge [
+        (config._module.args.nixosConfig or { })
+      ];
+    };
   };
 }
