@@ -1,14 +1,7 @@
 [
-  ./apps.nix
-  ./tags.nix
   ./home.nix
-  ./home-apps.nix
   ./hosts.nix
   ./modules.nix
   ./nixos.nix
   ./nixpkgs.nix
-  ./apps/defaults.nix
-  ./apps/single-user.nix
-  ./apps/getting-started.nix
-  ./apps/home-manager.nix
 ]
