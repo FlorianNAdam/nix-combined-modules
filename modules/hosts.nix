@@ -85,7 +85,7 @@ let
           '';
         };
 
-        modules2 = mkOption {
+        modules = mkOption {
           type = types.listOf types.deferredModule;
           default = [ ];
         };
@@ -119,6 +119,10 @@ in
           system = "x86_64-linux";
         };
       '';
+    };
+
+    specialArgs = mkOption {
+      type = types.raw;
     };
   };
 }
