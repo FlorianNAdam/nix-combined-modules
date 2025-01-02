@@ -25,7 +25,27 @@ let
           using `host.<name>.nixos` instead.
         '';
       };
-      config._internal.nixosModules = globalNixosModules ++ [ config.nixos ];
+
+      config =
+        let
+          customModule2 =
+            { config, host, ... }:
+            {
+              options = {
+                nix-config2 = mkOption {
+                  type = types.deferredModule;
+                  default = [ ];
+                };
+              };
+            };
+          customModules =
+            (lib.evalModules {
+              modules = [ customModule2 ] ++ config.modules2;
+            }).config.nix-config2;
+        in
+        {
+          _internal.nixosModules = globalNixosModules ++ [ config.nixos ] ++ [ customModules ];
+        };
     }
   );
 
