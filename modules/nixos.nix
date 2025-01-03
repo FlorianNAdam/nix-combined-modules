@@ -13,6 +13,8 @@ let
     ;
   globalNixosModules = config.modules.nixos;
 
+  outer_config = config;
+
   hostSubmodule = types.submodule (
     { config, ... }:
     {
@@ -56,7 +58,11 @@ let
             }).config.home;
         in
         {
-          _internal.nixosModules = globalNixosModules ++ [ config.nixos ] ++ [ customModules ];
+          _internal.nixosModules =
+            globalNixosModules
+            ++ [ config.nixos ]
+            ++ [ customModules ]
+            ++ [ { _module.args = outer_config.specialArgs; } ];
           _internal.homeModules = [ customHomeModules ];
         };
     }

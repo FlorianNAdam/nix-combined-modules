@@ -1,4 +1,9 @@
-{ inputs, lib, ... }@args:
+{
+  inputs,
+  lib,
+  config,
+  ...
+}@args:
 let
   inherit (lib)
     filterAttrs
