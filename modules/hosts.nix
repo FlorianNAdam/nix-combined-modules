@@ -95,6 +95,10 @@ let
           default = [ ];
         };
 
+        stateVersion = mkOption {
+          type = types.str;
+        };
+
       };
 
       config = {

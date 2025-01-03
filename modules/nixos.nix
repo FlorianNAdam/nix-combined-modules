@@ -30,6 +30,62 @@ let
 
       config =
         let
+          nixosCoreModule =
+            { host, ... }:
+            {
+
+              nix = {
+                registry = {
+                  nixpkgs.flake = inputs.nixpkgs;
+                };
+
+                settings = {
+                  trusted-users = [
+                    "root"
+                    host.username
+                  ];
+                  experimental-features = [
+                    "nix-command"
+                    "flakes"
+                  ];
+                };
+              };
+
+              users.users.${host.username} = {
+                isNormalUser = true;
+                home = host.homeDirectory;
+                group = host.username;
+                description = host.username;
+              };
+              users.groups.${host.username} = { };
+
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                extraSpecialArgs = {
+                  inherit host;
+                };
+                users.${host.username} = {
+                  imports = host._internal.homeModules;
+                };
+              };
+
+              system.stateVersion = config.stateVersion;
+            };
+          homeCoreModule =
+            { host, ... }:
+            {
+              home = {
+                username = "${host.username}";
+                homeDirectory = "${host.homeDirectory}";
+              };
+
+              programs.home-manager.enable = true;
+
+              systemd.user.startServices = "sd-switch";
+
+              home.stateVersion = config.stateVersion;
+            };
           customModule2 =
             { config, host, ... }:
             {
@@ -62,8 +118,10 @@ let
             globalNixosModules
             ++ [ config.nixos ]
             ++ [ customModules ]
+            ++ [ nixosCoreModule ]
             ++ [ { _module.args = outer_config.specialArgs; } ];
-          _internal.homeModules = [ customHomeModules ];
+          _internal.homeModules =
+            [ customHomeModules ] ++ [ homeCoreModule ] ++ [ { _module.args = outer_config.specialArgs; } ];
         };
     }
   );
