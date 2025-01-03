@@ -148,7 +148,32 @@ let
             "_internal"
             "nix-config"
           ];
-          nixPkgsModules = globalNixPkgsModules ++ [ config.nixpkgs ];
+          customModule2 =
+            { config, host, ... }:
+            {
+              options = {
+                nixos = mkOption {
+                  type = types.deferredModule;
+                  default = { };
+                };
+                home = mkOption {
+                  type = types.deferredModule;
+                  default = { };
+                };
+                nixpkgs = mkOption {
+                  type = types.deferredModule;
+                  default = { };
+                };
+              };
+            };
+          customModules = (
+            lib.evalModules {
+              modules = [ customModule2 ] ++ config.modules;
+            }
+          );
+          customNixpkgsModules = customModules.config.nixpkgs;
+
+          nixPkgsModules = globalNixPkgsModules ++ [ config.nixpkgs ] ++ [ customNixpkgsModules ];
           nixParams =
             (lib.evalModules {
               modules = nixPkgsModules ++ [

@@ -33,6 +33,9 @@ let
           nixosCoreModule =
             { host, ... }:
             {
+              imports = [
+                inputs.home-manager.nixosModules.default
+              ];
 
               nix = {
                 registry = {
@@ -56,6 +59,11 @@ let
                 home = host.homeDirectory;
                 group = host.username;
                 description = host.username;
+
+                extraGroups = [
+                  "wheel"
+                  "input"
+                ];
               };
               users.groups.${host.username} = { };
 
@@ -104,24 +112,26 @@ let
                 };
               };
             };
-          customModules =
-            (lib.evalModules {
+          customModules = (
+            lib.evalModules {
               modules = [ customModule2 ] ++ config.modules;
-            }).config.nixos;
-          customHomeModules =
-            (lib.evalModules {
-              modules = [ customModule2 ] ++ config.modules;
-            }).config.home;
+              specialArgs = outer_config.specialArgs;
+            }
+          );
+          customNixosModules = customModules.config.nixos;
+          customHomeModules = customModules.config.home;
+          customNixpkgsModules = customModules.config.nixpkgs;
         in
         {
           _internal.nixosModules =
             globalNixosModules
             ++ [ config.nixos ]
-            ++ [ customModules ]
+            ++ [ customNixosModules ]
             ++ [ nixosCoreModule ]
             ++ [ { _module.args = outer_config.specialArgs; } ];
-          _internal.homeModules =
-            [ customHomeModules ] ++ [ homeCoreModule ] ++ [ { _module.args = outer_config.specialArgs; } ];
+          _internal.homeModules = [ customHomeModules ] ++ [ homeCoreModule ];
+          _internal.nixPkgsModules = [ customNixpkgsModules ];
+          # ++ [ { _module.args = outer_config.specialArgs; } ];
         };
     }
   );
