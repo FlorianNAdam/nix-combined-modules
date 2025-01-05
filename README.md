@@ -367,6 +367,7 @@ A complete, minimal example for a flake importing an existing configuration migh
     };
 }
 ```
+Please keep in mind, that `configuration.nix` must not import `home.nix` again and neither of the two should define options for `nixpkgs`.
 If you were using packages or modules exported by flakes, you will probably need to add [specialArgs](#specialArgs).
 
 
