@@ -177,7 +177,7 @@ These modules are structured as follows:
   };
 }
 ```
-A valid, empty module would simply be: `{}`{:.nix} 
+A valid, empty module would simply be: `{}` 
 
 ### Importing Modules
 
@@ -235,8 +235,8 @@ modules =
 
 ### Accessing inputs / specialArgs
 
-Similar to ```lib.nixosSystem```{:.nix}, ```specialArgs```{:.nix}, can be used to pass arguments to modules.\
-The most common use case for this is propagating ```inputs```{:.nix}, in order to access packages or modules defined by flakes.
+Similar to ```lib.nixosSystem```, ```specialArgs```, can be used to pass arguments to modules.\
+The most common use case for this is propagating ```inputs```, in order to access packages or modules defined by flakes.
 For example: 
 
 ```nix
