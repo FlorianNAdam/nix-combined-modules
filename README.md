@@ -66,6 +66,10 @@ A modular sample config may look like this:
           inherit inputs;
         };
 
+        modules = [
+          # <... global modules ...> 
+        ]; 
+
         hosts = import ./hosts/my-host      
       };
     };
@@ -98,7 +102,7 @@ A modular sample config may look like this:
   home =
     { lib, ... }:
     {
-      # <... host specific nixos config ...>
+     # <... host specific nixos config ...>
     };
 
   stateVersion = "24.05";
@@ -131,10 +135,6 @@ A modular sample config may look like this:
 
 This will create a Flake, with some more or less random predefined defaults 
 for a single user with home-manager enabled.
-
-### Importing existing NixOS/home-manager modules
-
-<...>
 
 ## Usage
 
@@ -187,25 +187,23 @@ nix-config = {
   modules = [
     <path-to-module>.nix
 
-    <...>
+    # <...>
   ];
 
-  <...>
+  # <...>
 };
 ```
 
 or to a single host, like this:
 ```nix
 host.my-host = {
-  <...>
-
   modules = [
     <path-to-module>.nix
     
-    <...>
+    # <...>
   ];
 
-  <...>
+  # <...>
 };
 ```
 To avoid writing out every path, we can use some nix features.
@@ -215,7 +213,7 @@ modules = [
   ../../modules/example1.nix
   ../../modules/example2.nix
   ../../modules/exmaple3.nix
-  <...>
+  # <...>
 ];
 ```
 can be written as:
@@ -227,13 +225,13 @@ modules =
       "example1"
       "example2"
       "exmaple3"
-      <...>
+      # <...>
     ];
   in
     map (name: "${modulesDir}/${name}.nix") modules;
 ```
 
-### Accessing inputs / specialArgs
+### <a name="specialArgs"></a>Accessing inputs / specialArgs
 
 Similar to ```lib.nixosSystem```, ```specialArgs```, can be used to pass arguments to modules.\
 The most common use case for this is propagating ```inputs```, in order to access packages or modules defined by flakes.
@@ -315,7 +313,61 @@ nix-config = {
 };
 ```
 
+## Importing existing configurations
 
+The easiest way to migrate to nix-combined-modules is by simply importing an existing configuration and then turning everything into modules piece-by-piece. (Or just leaving it as is. You do you).\
+Existing configurations can be imported from any module.\
+
+A complete, minimal example for a flake importing an existing configuration might look like this:
+```nix
+{
+  description = "Nixos config flake";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    nix-combined-modules.url = "github:FlorianNAdam/nix-combined-modules";
+    home-manager.url = "github:nix-community/home-manager";
+  };
+
+  outputs =
+    { flake-parts, ... }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.nix-combined-modules.flakeModule
+      ];
+
+      systems = [ ];
+
+      nix-config = {
+        hosts = {
+          my-host = {
+            kind = "nixos";
+            system = "x86_64-linux";
+
+            username = "florian";
+
+            nixos = {
+              imports = [ 
+                ./configuration.nix
+                ./hardware-configuration.nix
+              ];
+            };
+
+            home = {
+              imports = [
+                ./home.nix
+              ];
+            };
+
+            stateVersion = "24.05";
+          };       
+        };
+      };
+    };
+}
+```
+If you were using packages or modules exported by flakes, you will probably need to add [specialArgs](#specialArgs).
 
 
 ## <a name="avoiding_flake-parts"></a>Avoiding flake-parts
