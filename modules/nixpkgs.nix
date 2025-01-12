@@ -110,13 +110,16 @@ let
         };
       };
 
-      config = {
-        params.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) config.packages.unfree;
-        params.config.allowInsecurePredicate =
-          pkg: builtins.elem (lib.getName pkg) config.packages.insecure;
-        params.config.allowNonSourcePredicate =
-          pkg: builtins.elem (lib.getName pkg) config.packages.nonSource;
-      };
+      config =
+        let
+          pkg_matches_any =
+            regexes: (pkg: builtins.any (regex: builtins.match regex (lib.getName pkg) != null) regexes);
+        in
+        {
+          params.config.allowUnfreePredicate = pkg_matches_any config.packages.unfree;
+          params.config.allowInsecurePredicate = pkg_matches_any config.packages.insecure;
+          params.config.allowNonSourcePredicate = pkg_matches_any config.packages.nonSource;
+        };
     };
 
   hostSubmodule = types.submodule (
