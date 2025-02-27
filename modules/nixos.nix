@@ -112,10 +112,13 @@ let
                 };
               };
             };
+          specialArgs = outer_config.specialArgs // {
+            hosts = outer_config.hosts;
+          };
           customModules = (
             lib.evalModules {
               modules = [ customModule2 ] ++ config.modules;
-              specialArgs = outer_config.specialArgs;
+              specialArgs = specialArgs;
             }
           );
           customNixosModules = customModules.config.nixos;
@@ -128,7 +131,7 @@ let
             ++ [ config.nixos ]
             ++ [ customNixosModules ]
             ++ [ nixosCoreModule ]
-            ++ [ { _module.args = outer_config.specialArgs; } ];
+            ++ [ { _module.args = specialArgs; } ];
           _internal.homeModules = [ customHomeModules ] ++ [ homeCoreModule ];
           _internal.nixPkgsModules = [ customNixpkgsModules ];
           # ++ [ { _module.args = outer_config.specialArgs; } ];
