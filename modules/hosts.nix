@@ -24,6 +24,8 @@ let
       hosts = config.hosts;
     };
 
+    shorthandOnlyDefinesConfig = true;
+
     modules = [
       (
         { name, config, ... }:
