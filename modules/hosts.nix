@@ -19,9 +19,94 @@ let
       inherit description;
     };
 
+  util = rec {
+    toModuleList =
+      path: val:
+      let
+        handlers = [
+          {
+            pred = lib.isString;
+            func = stringToModuleList;
+          }
+          {
+            pred = lib.isList;
+            func = listToModuleList;
+          }
+          {
+            pred = lib.isAttrs;
+            func = attrsToModuleList;
+          }
+          {
+            pred = lib.isPath;
+            func = pathToModuleList;
+          }
+          {
+            pred = lib.isFunction;
+            func = functionToModuleList;
+          }
+        ];
+      in
+      let
+        matched = lib.lists.findFirst (h: h.pred val) null handlers;
+      in
+      if matched != null then matched.func path val else throw "Invalid module list entry: ${val}";
+
+    stringToModuleList =
+      path: val:
+      let
+        hasSuffix = lib.strings.hasSuffix;
+        addSuffixIfMissing = suffix: str: if hasSuffix suffix str then str else "${str}${suffix}";
+      in
+      [ "${path}/${addSuffixIfMissing ".nix" val}" ];
+
+    pathToModuleList = _: val: [ val ];
+
+    functionToModuleList = _: val: [ val ];
+
+    listToModuleList = path: val: builtins.concatMap (toModuleList path) val;
+
+    attrsToModuleList =
+      path: val:
+      lib.lists.flatten (
+        lib.attrsets.mapAttrsToList (
+          name: value:
+          let
+            newPath = "${path}/${name}";
+          in
+          lib.lists.flatten [
+            (toModuleList newPath value)
+            (addAttrNameModule path name)
+            (addAttrDefaultModule path name)
+          ]
+        ) val
+      );
+
+    addAttrNameModule =
+      path: name:
+      let
+        modulePath = "${path}/${name}.nix";
+      in
+      if builtins.pathExists modulePath then [ modulePath ] else [ ];
+
+    addAttrDefaultModule =
+      path: name:
+      let
+        modulePath = "${path}/${name}/default.nix";
+      in
+      if builtins.pathExists modulePath then [ modulePath ] else [ ];
+
+    mkModuleList =
+      path: val:
+      if builtins.isPath path then
+        toModuleList path val
+      else
+        throw "Expected module root to be a path: ${path}";
+  };
+
   hostType = types.submoduleWith {
     specialArgs = config.specialArgs // {
       hosts = config.hosts;
+      inherit (util) mkModuleList;
     };
 
     shorthandOnlyDefinesConfig = true;
