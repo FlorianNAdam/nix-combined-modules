@@ -54,10 +54,36 @@ let
     stringToModuleList =
       path: val:
       let
-        hasSuffix = lib.strings.hasSuffix;
-        addSuffixIfMissing = suffix: str: if hasSuffix suffix str then str else "${str}${suffix}";
+        modules = (parentModules path val);
       in
-      [ "${path}/${addSuffixIfMissing ".nix" val}" ];
+      if modules == [ ] then throw "No module ${path}/${val} found" else modules;
+
+    parentModules =
+      path: val:
+      let
+        parents = parentPaths val;
+        paths = builtins.map (p: "${path}${p}") parents;
+        modules = builtins.map (p: addModules p) paths;
+      in
+      lib.lists.flatten modules;
+
+    parentPaths =
+      path:
+      let
+        segments = lib.strings.splitString "/" path;
+
+        cleanSegments = lib.lists.filter (s: s != "") segments;
+
+        cumulativePaths = lib.lists.foldl (
+          acc: seg:
+          let
+            prev = if acc == [ ] then "" else lib.lists.last acc;
+            newPath = if prev == "" then "/${seg}" else "${prev}/${seg}";
+          in
+          acc ++ [ newPath ]
+        ) [ ] cleanSegments;
+      in
+      cumulativePaths;
 
     pathToModuleList = _: val: [ val ];
 
@@ -73,27 +99,22 @@ let
           let
             newPath = "${path}/${name}";
           in
-          lib.lists.flatten [
-            (toModuleList newPath value)
-            (addAttrNameModule path name)
-            (addAttrDefaultModule path name)
-          ]
+          (toModuleList newPath value) ++ (addModules newPath)
         ) val
       );
 
-    addAttrNameModule =
-      path: name:
-      let
-        modulePath = "${path}/${name}.nix";
-      in
-      if builtins.pathExists modulePath then [ modulePath ] else [ ];
+    addModules =
+      path:
+      lib.lists.flatten [
+        (addNameModule path)
+        (addDefaultModule path)
+      ];
 
-    addAttrDefaultModule =
-      path: name:
-      let
-        modulePath = "${path}/${name}/default.nix";
-      in
-      if builtins.pathExists modulePath then [ modulePath ] else [ ];
+    addNameModule = path: existingPathOrEmpty "${path}.nix";
+
+    addDefaultModule = path: existingPathOrEmpty "${path}/default.nix";
+
+    existingPathOrEmpty = path: if builtins.pathExists path then [ path ] else [ ];
 
     mkModuleList =
       path: val:
