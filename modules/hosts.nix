@@ -19,6 +19,16 @@ let
       inherit description;
     };
 
+  combinedModule =
+    { ... }:
+    {
+      options = {
+        nixos = mkModuleOption "NixOS configurations";
+        home = mkModuleOption "home-manager configurations";
+        nixpkgs = mkModuleOption "nixpkgs configurations";
+      };
+    };
+
   util = rec {
     toModuleList =
       path: val:
@@ -209,15 +219,46 @@ let
               default = [ ];
             };
 
+            _internal.moduleFragments = mkOption {
+              type = types.submodule {
+                options = {
+                  nixos = mkModuleOption "NixOS configurations extracted from combined modules";
+                  home = mkModuleOption "home-manager configurations extracted from combined modules";
+                  nixpkgs = mkModuleOption "nixpkgs configurations extracted from combined modules";
+                };
+              };
+              internal = true;
+            };
+
             stateVersion = mkOption {
               type = types.str;
             };
 
           };
 
-          config = {
-            inherit name;
-          };
+          config =
+            let
+              host = builtins.removeAttrs config [
+                "_internal"
+                "nix-config"
+              ];
+              specialArgs = args.config.specialArgs // {
+                hosts = args.config.hosts;
+                inherit host;
+                inherit (util) mkModuleList;
+              };
+              moduleFragments =
+                (lib.evalModules {
+                  modules = [ combinedModule ] ++ config.modules;
+                  inherit specialArgs;
+                }).config;
+            in
+            {
+              inherit name;
+              _internal.moduleFragments = {
+                inherit (moduleFragments) nixos home nixpkgs;
+              };
+            };
         }
       )
     ];
@@ -248,6 +289,7 @@ in
 
     specialArgs = mkOption {
       type = types.raw;
+      default = { };
     };
   };
 }

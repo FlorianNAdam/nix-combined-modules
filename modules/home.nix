@@ -24,7 +24,27 @@ let
           using `host.<name>.home` instead.
         '';
       };
-      config._internal.homeModules = globalHomeModules ++ [ config.home ];
+      config._internal.homeModules =
+        let
+          homeCoreModule =
+            { host, ... }:
+            {
+              home = {
+                username = "${host.username}";
+                homeDirectory = "${host.homeDirectory}";
+              };
+
+              programs.home-manager.enable = true;
+
+              systemd.user.startServices = "sd-switch";
+
+              home.stateVersion = config.stateVersion;
+            };
+        in
+        globalHomeModules
+        ++ [ config.home ]
+        ++ [ config._internal.moduleFragments.home ]
+        ++ [ homeCoreModule ];
     }
   );
 

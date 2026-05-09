@@ -6,12 +6,12 @@
 }:
 let
   inherit (lib)
-    mapAttrs
     mkOption
     types
     ;
 
   globalNixPkgsModules = config.modules.nixpkgs;
+  outer_config = config;
 
   rootModule =
     { host, config, ... }:
@@ -151,37 +151,13 @@ let
             "_internal"
             "nix-config"
           ];
-          customModule2 =
-            { config, host, ... }:
-            {
-              options = {
-                nixos = mkOption {
-                  type = types.deferredModule;
-                  default = { };
-                };
-                home = mkOption {
-                  type = types.deferredModule;
-                  default = { };
-                };
-                nixpkgs = mkOption {
-                  type = types.deferredModule;
-                  default = { };
-                };
-              };
-            };
-          customModules = (
-            lib.evalModules {
-              modules = [ customModule2 ] ++ config.modules;
-            }
-          );
-          customNixpkgsModules = customModules.config.nixpkgs;
-
-          nixPkgsModules = globalNixPkgsModules ++ [ config.nixpkgs ] ++ [ customNixpkgsModules ];
+          customNixpkgsModule = config._internal.moduleFragments.nixpkgs;
+          nixPkgsModules = globalNixPkgsModules ++ [ config.nixpkgs ] ++ [ customNixpkgsModule ];
           nixParams =
             (lib.evalModules {
               modules = nixPkgsModules ++ [
                 {
-                  _module.args = {
+                  _module.args = outer_config.specialArgs // {
                     inherit host;
                     inputs = builtins.removeAttrs inputs [
                       "self"

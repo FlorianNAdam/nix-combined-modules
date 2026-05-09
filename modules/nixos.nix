@@ -80,61 +80,18 @@ let
 
               system.stateVersion = config.stateVersion;
             };
-          homeCoreModule =
-            { host, ... }:
-            {
-              home = {
-                username = "${host.username}";
-                homeDirectory = "${host.homeDirectory}";
-              };
-
-              programs.home-manager.enable = true;
-
-              systemd.user.startServices = "sd-switch";
-
-              home.stateVersion = config.stateVersion;
-            };
-          customModule2 =
-            { config, host, ... }:
-            {
-              options = {
-                nixos = mkOption {
-                  type = types.deferredModule;
-                  default = { };
-                };
-                home = mkOption {
-                  type = types.deferredModule;
-                  default = { };
-                };
-                nixpkgs = mkOption {
-                  type = types.deferredModule;
-                  default = { };
-                };
-              };
-            };
           specialArgs = outer_config.specialArgs // {
             hosts = outer_config.hosts;
           };
-          customModules = (
-            lib.evalModules {
-              modules = [ customModule2 ] ++ config.modules;
-              specialArgs = specialArgs;
-            }
-          );
-          customNixosModules = customModules.config.nixos;
-          customHomeModules = customModules.config.home;
-          customNixpkgsModules = customModules.config.nixpkgs;
+          moduleFragments = config._internal.moduleFragments;
         in
         {
           _internal.nixosModules =
             globalNixosModules
             ++ [ config.nixos ]
-            ++ [ customNixosModules ]
+            ++ [ moduleFragments.nixos ]
             ++ [ nixosCoreModule ]
             ++ [ { _module.args = specialArgs; } ];
-          _internal.homeModules = [ customHomeModules ] ++ [ homeCoreModule ];
-          _internal.nixPkgsModules = [ customNixpkgsModules ];
-          # ++ [ { _module.args = outer_config.specialArgs; } ];
         };
     }
   );
