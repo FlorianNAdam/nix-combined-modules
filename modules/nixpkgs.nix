@@ -10,8 +10,6 @@ let
     types
     ;
 
-  globalNixPkgsModules = config.modules.nixpkgs;
-
   rootModule =
     { host, ... }:
     {
@@ -151,7 +149,12 @@ let
             "nix-config"
           ];
           customNixpkgsModule = config._internal.moduleFragments.nixpkgs;
-          nixPkgsModules = globalNixPkgsModules ++ [ config.nixpkgs ] ++ [ customNixpkgsModule ];
+          nixPkgsModules = [
+            rootModule
+            predicateModule
+            config.nixpkgs
+            customNixpkgsModule
+          ];
           nixParams =
             (lib.evalModules {
               modules = nixPkgsModules ++ [
@@ -172,9 +175,4 @@ in
   options.hosts = mkOption {
     type = types.attrsOf hostSubmodule;
   };
-
-  config.modules.nixpkgs = [
-    rootModule
-    predicateModule
-  ];
 }

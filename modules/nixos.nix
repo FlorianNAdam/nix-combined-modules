@@ -11,7 +11,6 @@ let
     mkOption
     types
     ;
-  globalNixosModules = config.modules.nixos;
 
   hostSubmodule = types.submodule (
     { config, ... }:
@@ -79,12 +78,12 @@ let
           moduleFragments = config._internal.moduleFragments;
         in
         {
-          _internal.nixosModules =
-            globalNixosModules
-            ++ [ config.nixos ]
-            ++ [ moduleFragments.nixos ]
-            ++ [ nixosCoreModule ]
-            ++ [ { _module.args = config._internal.moduleArgs; } ];
+          _internal.nixosModules = [
+            config.nixos
+          ]
+          ++ [ moduleFragments.nixos ]
+          ++ [ nixosCoreModule ]
+          ++ [ { _module.args = config._internal.moduleArgs; } ];
         };
     }
   );

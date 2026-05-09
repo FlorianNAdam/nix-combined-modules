@@ -168,7 +168,6 @@ let
             };
             system = mkOption {
               type = types.str;
-              default = null;
               description = lib.mdDoc ''
                 The system that this host runs on. This is used to initialize
                 `nixpkgs`.
@@ -260,7 +259,7 @@ let
               };
               moduleFragments =
                 (lib.evalModules {
-                  modules = [ combinedModule ] ++ config.modules;
+                  modules = [ combinedModule ] ++ args.config.modules ++ config.modules;
                   specialArgs = moduleArgs;
                 }).config;
             in

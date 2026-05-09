@@ -10,7 +10,6 @@ let
     mkOption
     types
     ;
-  globalHomeModules = config.modules.home-manager;
 
   hostSubmodule = types.submodule (
     { config, ... }:
@@ -41,10 +40,7 @@ let
               home.stateVersion = config.stateVersion;
             };
         in
-        globalHomeModules
-        ++ [ config.home ]
-        ++ [ config._internal.moduleFragments.home ]
-        ++ [ homeCoreModule ];
+        [ config.home ] ++ [ config._internal.moduleFragments.home ] ++ [ homeCoreModule ];
     }
   );
 
