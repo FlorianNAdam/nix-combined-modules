@@ -1,4 +1,5 @@
 {
+  inputs,
   lib,
   config,
   ...
@@ -130,7 +131,11 @@ let
   };
 
   hostType = types.submoduleWith {
-    specialArgs = config.specialArgs // {
+    specialArgs = {
+      inherit inputs;
+    }
+    // config.specialArgs
+    // {
       hosts = config.hosts;
       inherit (util) mkModuleList;
     };
@@ -252,7 +257,11 @@ let
                 "_internal"
                 "nix-config"
               ];
-              moduleArgs = args.config.specialArgs // {
+              moduleArgs = {
+                inherit inputs;
+              }
+              // args.config.specialArgs
+              // {
                 hosts = args.config.hosts;
                 inherit host;
                 inherit (util) mkModuleList;
