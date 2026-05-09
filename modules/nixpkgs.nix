@@ -11,10 +11,9 @@ let
     ;
 
   globalNixPkgsModules = config.modules.nixpkgs;
-  outer_config = config;
 
   rootModule =
-    { host, config, ... }:
+    { host, ... }:
     {
       _file = __curPos.file;
 
@@ -157,13 +156,7 @@ let
             (lib.evalModules {
               modules = nixPkgsModules ++ [
                 {
-                  _module.args = outer_config.specialArgs // {
-                    inherit host;
-                    inputs = builtins.removeAttrs inputs [
-                      "self"
-                      "nixpkgs"
-                    ];
-                  };
+                  _module.args = config._internal.moduleArgs;
                 }
               ];
             }).config;
@@ -174,7 +167,6 @@ let
         };
     }
   );
-  cfg = config;
 in
 {
   options.hosts = mkOption {

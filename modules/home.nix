@@ -70,9 +70,7 @@ in
       _: host:
       inputs.home-manager.lib.homeManagerConfiguration {
         pkgs = host._internal.pkgs;
-        extraSpecialArgs = {
-          inherit host;
-        };
+        extraSpecialArgs = host._internal.extraSpecialArgs;
         modules = builtins.addErrorContext "while importing home-manager definitions" host._internal.homeModules;
       }
     ) homeHosts;

@@ -13,8 +13,6 @@ let
     ;
   globalNixosModules = config.modules.nixos;
 
-  outer_config = config;
-
   hostSubmodule = types.submodule (
     { config, ... }:
     {
@@ -70,19 +68,14 @@ let
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = {
-                  inherit host;
-                };
+                extraSpecialArgs = config._internal.extraSpecialArgs;
                 users.${host.username} = {
-                  imports = host._internal.homeModules;
+                  imports = config._internal.homeModules;
                 };
               };
 
               system.stateVersion = config.stateVersion;
             };
-          specialArgs = outer_config.specialArgs // {
-            hosts = outer_config.hosts;
-          };
           moduleFragments = config._internal.moduleFragments;
         in
         {
@@ -91,7 +84,7 @@ let
             ++ [ config.nixos ]
             ++ [ moduleFragments.nixos ]
             ++ [ nixosCoreModule ]
-            ++ [ { _module.args = specialArgs; } ];
+            ++ [ { _module.args = config._internal.moduleArgs; } ];
         };
     }
   );
@@ -112,9 +105,7 @@ in
   config.nixosConfigurations = mapAttrs (
     _: host:
     host._internal.pkgs.nixos {
-      imports = host._internal.nixosModules ++ [
-        { _module.args.host = host; }
-      ];
+      imports = host._internal.nixosModules;
     }
   ) nixosHosts;
 }

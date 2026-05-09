@@ -1,15 +1,10 @@
 {
-  inputs,
   lib,
   config,
   ...
 }@args:
 let
-  inherit (lib)
-    filterAttrs
-    mkOption
-    types
-    ;
+  inherit (lib) mkOption types;
 
   mkModuleOption =
     description:
@@ -229,6 +224,22 @@ let
               };
               internal = true;
             };
+            _internal.moduleArgs = mkOption {
+              type = types.raw;
+              internal = true;
+              description = ''
+                Shared module arguments passed to nixos, home-manager, nixpkgs,
+                and combined modules for this host.
+              '';
+            };
+            _internal.extraSpecialArgs = mkOption {
+              type = types.raw;
+              internal = true;
+              description = ''
+                Shared module arguments safe to pass as home-manager
+                extraSpecialArgs.
+              '';
+            };
 
             stateVersion = mkOption {
               type = types.str;
@@ -242,7 +253,7 @@ let
                 "_internal"
                 "nix-config"
               ];
-              specialArgs = args.config.specialArgs // {
+              moduleArgs = args.config.specialArgs // {
                 hosts = args.config.hosts;
                 inherit host;
                 inherit (util) mkModuleList;
@@ -250,11 +261,18 @@ let
               moduleFragments =
                 (lib.evalModules {
                   modules = [ combinedModule ] ++ config.modules;
-                  inherit specialArgs;
+                  specialArgs = moduleArgs;
                 }).config;
             in
             {
               inherit name;
+              _internal.moduleArgs = moduleArgs;
+              _internal.extraSpecialArgs = builtins.removeAttrs moduleArgs [
+                "config"
+                "lib"
+                "options"
+                "pkgs"
+              ];
               _internal.moduleFragments = {
                 inherit (moduleFragments) nixos home nixpkgs;
               };
