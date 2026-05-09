@@ -11,6 +11,7 @@ let
     mkOption
     types
     ;
+  outer_config = config;
 
   hostSubmodule = types.submodule (
     { config, ... }:
@@ -79,11 +80,12 @@ let
         in
         {
           _internal.nixosModules = [
+            outer_config.nixos
             config.nixos
-          ]
-          ++ [ moduleFragments.nixos ]
-          ++ [ nixosCoreModule ]
-          ++ [ { _module.args = config._internal.moduleArgs; } ];
+            moduleFragments.nixos
+            nixosCoreModule
+            { _module.args = config._internal.moduleArgs; }
+          ];
         };
     }
   );

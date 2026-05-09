@@ -10,6 +10,7 @@ let
     mkOption
     types
     ;
+  outer_config = config;
 
   hostSubmodule = types.submodule (
     { config, ... }:
@@ -40,7 +41,12 @@ let
               home.stateVersion = config.stateVersion;
             };
         in
-        [ config.home ] ++ [ config._internal.moduleFragments.home ] ++ [ homeCoreModule ];
+        [
+          outer_config.home
+          config.home
+          config._internal.moduleFragments.home
+          homeCoreModule
+        ];
     }
   );
 

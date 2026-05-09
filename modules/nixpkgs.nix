@@ -10,6 +10,8 @@ let
     types
     ;
 
+  outer_config = config;
+
   rootModule =
     { host, ... }:
     {
@@ -152,6 +154,7 @@ let
           nixPkgsModules = [
             rootModule
             predicateModule
+            outer_config.nixpkgs
             config.nixpkgs
             customNixpkgsModule
           ];

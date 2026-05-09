@@ -304,6 +304,10 @@ in
       '';
     };
 
+    nixpkgs = mkModuleOption "Global nixpkgs configurations";
+    nixos = mkModuleOption "Global NixOS configurations";
+    home = mkModuleOption "Global home-manager configurations";
+
     specialArgs = mkOption {
       type = types.raw;
       default = { };
