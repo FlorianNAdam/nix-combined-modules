@@ -51,6 +51,15 @@ let
   );
 
   homeHosts = config.hosts;
+
+  homeConfigurations = mapAttrs (
+    _: host:
+    inputs.home-manager.lib.homeManagerConfiguration {
+      pkgs = host._internal.pkgs;
+      extraSpecialArgs = host._internal.extraSpecialArgs;
+      modules = builtins.addErrorContext "while importing home-manager definitions" host._internal.homeModules;
+    }
+  ) homeHosts;
 in
 {
   options = {
@@ -68,13 +77,6 @@ in
   };
 
   config = {
-    homeConfigurations = mapAttrs (
-      _: host:
-      inputs.home-manager.lib.homeManagerConfiguration {
-        pkgs = host._internal.pkgs;
-        extraSpecialArgs = host._internal.extraSpecialArgs;
-        modules = builtins.addErrorContext "while importing home-manager definitions" host._internal.homeModules;
-      }
-    ) homeHosts;
+    inherit homeConfigurations;
   };
 }

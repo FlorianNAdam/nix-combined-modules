@@ -216,6 +216,9 @@ let
             modules = mkOption {
               type = types.listOf types.deferredModule;
               default = [ ];
+              description = ''
+                Additional combined modules to import for this host.
+              '';
             };
 
             _internal.moduleFragments = mkOption {
@@ -247,6 +250,9 @@ let
 
             stateVersion = mkOption {
               type = types.str;
+              description = ''
+                State version used for both the NixOS and home-manager configuration.
+              '';
             };
 
           };
@@ -320,6 +326,9 @@ in
     specialArgs = mkOption {
       type = types.raw;
       default = { };
+      description = ''
+        Additional arguments passed to host, NixOS, home-manager, nixpkgs, and combined modules.
+      '';
     };
   };
 }

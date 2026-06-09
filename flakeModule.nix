@@ -18,6 +18,11 @@ in
       default = { };
     };
 
+    flake.diskoConfigurations = mkOption {
+      type = types.lazyAttrsOf types.raw;
+      default = { };
+    };
+
     nix-config = mkOption {
       type = types.submoduleWith {
         modules = (import ./modules/all-modules.nix) ++ [
@@ -29,8 +34,11 @@ in
 
   config = {
     flake = {
+      diskoConfigurations = config.nix-config.diskoConfigurations;
       homeConfigurations = config.nix-config.homeConfigurations;
       nixosConfigurations = config.nix-config.nixosConfigurations;
+
+      packages = import ./diskoPackages.nix { inherit config inputs lib; };
     };
   };
 }

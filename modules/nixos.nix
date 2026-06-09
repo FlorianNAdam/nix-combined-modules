@@ -83,6 +83,9 @@ let
             outer_config.nixos
             config.nixos
             moduleFragments.nixos
+          ]
+          ++ config._internal.diskoNixosModules
+          ++ [
             nixosCoreModule
             { _module.args = config._internal.moduleArgs; }
           ];
@@ -91,6 +94,13 @@ let
   );
 
   nixosHosts = filterAttrs (_: host: host.kind == "nixos") config.hosts;
+
+  nixosConfigurations = mapAttrs (
+    _: host:
+    host._internal.pkgs.nixos {
+      imports = host._internal.nixosModules;
+    }
+  ) nixosHosts;
 in
 {
   options = {
@@ -103,10 +113,7 @@ in
       '';
     };
   };
-  config.nixosConfigurations = mapAttrs (
-    _: host:
-    host._internal.pkgs.nixos {
-      imports = host._internal.nixosModules;
-    }
-  ) nixosHosts;
+  config = {
+    inherit nixosConfigurations;
+  };
 }

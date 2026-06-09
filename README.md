@@ -50,6 +50,11 @@ A modular sample config may look like this:
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -84,6 +89,12 @@ A modular sample config may look like this:
   system = "x86_64-linux";
 
   username = "florian";
+
+  disko = {
+    system = import ../../disko/ext4.nix {
+      device = "/dev/disk/by-id/...";
+    };
+  };
 
   modules = [
     ../../modules/example.nix
@@ -178,6 +189,75 @@ These modules are structured as follows:
 }
 ```
 A valid, empty module would simply be: `{}` 
+
+### Disko configurations
+
+Hosts can define named disko configurations with `disko`:
+
+```nix
+{
+  kind = "nixos";
+  system = "x86_64-linux";
+
+  disko = {
+    system = import ../../disko/ext4-luks.nix {
+      device = "/dev/disk/by-id/...";
+    };
+
+    storage = import ../../disko/zfs-pool.nix {
+      devices = [
+        "/dev/disk/by-id/..."
+        "/dev/disk/by-id/..."
+        "/dev/disk/by-id/..."
+      ];
+      pool = "storage";
+      mode = "raidz2";
+      mountpoint = "/storage";
+      datasets = {
+        dataset = {
+          mountpoint = "/storage/dataset";
+        };
+      };
+    };
+  };
+}
+```
+
+This exports flattened configurations for the upstream disko CLI:
+
+```nix
+diskoConfigurations.<host>
+diskoConfigurations."<host>.system"
+diskoConfigurations."<host>.storage"
+```
+
+Use the same attribute name when running disko:
+
+```sh
+nix run .#disko -- --flake .#<host>
+nix run .#disko -- --flake .#<host>.system
+nix run .#disko -- --flake .#<host>.storage
+```
+
+Convenience package passthroughs are also generated for each disko configuration:
+
+```sh
+nix run .#disko.<host>
+nix run .#disko.<host>.system
+nix run .#disko.<host>.storage
+```
+
+Additional disko arguments can be passed after `--`:
+
+```sh
+nix run .#disko.<host>.storage -- --mode format,mount
+```
+
+The `<host>` configuration merges all named disko entries for that host. The
+`<host>.<name>` configurations are useful when provisioning only one part, such
+as just the system disk or just a storage pool.
+
+Disko configurations are host-level only. Each named disko configuration is also imported into the generated NixOS configuration, so disko can provide its runtime filesystem, boot, and swap configuration there.
 
 ### Importing Modules
 
