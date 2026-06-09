@@ -34,23 +34,14 @@ let
         Add inputs.disko.url = "github:nix-community/disko".
       '';
 
-  diskoConfigType = types.submodule {
-    options.disko.devices = mkOption {
-      type = diskoLib.toplevel;
-      default = { };
-    };
-  };
-
   evalDiskoModules =
     host: diskoModules:
     (lib.evalModules {
       modules = [
         {
-          options = {
-            disko = mkOption {
-              type = diskoConfigType;
-              default = { };
-            };
+          options.disko.devices = mkOption {
+            type = diskoLib.toplevel;
+            default = { };
           };
         }
         { _module.args = host._internal.moduleArgs; }
