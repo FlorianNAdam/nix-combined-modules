@@ -253,6 +253,16 @@ Additional disko arguments can be passed after `--`:
 nix run .#disko.<host>.storage -- --mode format,mount
 ```
 
+Host-level `disko-install` passthroughs are generated as well:
+
+```sh
+nix run .#disko-install.<host> -- --mode format
+```
+
+`disko-install` runs disko and then installs `nixosConfigurations.<host>`, so
+install passthroughs are only generated per host, not per named disko
+configuration.
+
 The `<host>` configuration merges all named disko entries for that host. The
 `<host>.<name>` configurations are useful when provisioning only one part, such
 as just the system disk or just a storage pool.
